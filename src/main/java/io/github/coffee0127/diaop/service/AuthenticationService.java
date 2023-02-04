@@ -10,6 +10,7 @@ public class AuthenticationService {
   private final OtpAdapter otpAdapter;
   private final SlackAdapter slackAdapter;
   private final FailCounter failCounter;
+  private final Slf4JLogAdapter slf4JLogAdapter;
 
   public AuthenticationService() {
     profileRepo = new ProfileRepo();
@@ -17,6 +18,7 @@ public class AuthenticationService {
     otpAdapter = new OtpAdapter();
     slackAdapter = new SlackAdapter();
     failCounter = new FailCounter();
+    slf4JLogAdapter = new Slf4JLogAdapter();
   }
 
   public boolean verify(String account, String password, String otp) {
@@ -48,6 +50,6 @@ public class AuthenticationService {
 
   private void logFailedCount(String account) {
     var failedCount = failCounter.get(account);
-    log.info("accountId:{} failed times:{}", account, failedCount);
+    slf4JLogAdapter.info("accountId:" + account + " failed times:" + failedCount);
   }
 }
