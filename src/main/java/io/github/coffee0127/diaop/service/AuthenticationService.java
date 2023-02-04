@@ -1,6 +1,7 @@
 package io.github.coffee0127.diaop.service;
 
 import com.example.external.HttpClient;
+import com.example.external.SlackClient;
 import com.example.external.SqlConnection;
 import java.util.Map;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -30,6 +31,10 @@ public class AuthenticationService {
     if (passwordFromDb.equals(hashedPassword) && currentOtp.equals(otp)) {
       return true;
     } else {
+      var message = "account:" + account + " try to login failed";
+      var slackClient = new SlackClient("<YOUR_API_TOKEN>");
+      slackClient.postMessage("#my-channel", message);
+
       return false;
     }
   }
