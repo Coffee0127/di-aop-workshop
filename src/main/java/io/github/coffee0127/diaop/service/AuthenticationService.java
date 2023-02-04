@@ -1,16 +1,17 @@
 package io.github.coffee0127.diaop.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.digest.DigestUtils;
 
 @Slf4j
 public class AuthenticationService {
 
   private final ProfileRepo profileRepo;
+  private final Sha256Adapter sha256Adapter;
   private final SlackAdapter slackAdapter;
 
   public AuthenticationService() {
     profileRepo = new ProfileRepo();
+    sha256Adapter = new Sha256Adapter();
     slackAdapter = new SlackAdapter();
   }
 
@@ -23,7 +24,7 @@ public class AuthenticationService {
     }
     var passwordFromDb = profileRepo.getPasswordFromDb(account);
 
-    var hashedPassword = getHashedPassword(password);
+    var hashedPassword = sha256Adapter.getHashedPassword(password);
 
     var currentOtp = getCurrentOtp(account, httpService);
 
@@ -44,10 +45,6 @@ public class AuthenticationService {
   private boolean isLocked(String account, HttpService httpService) {
     return Boolean.parseBoolean(
         httpService.get("https://my-api.com/api/failedCounter/isLocked?account=" + account));
-  }
-
-  private String getHashedPassword(String password) {
-    return DigestUtils.sha256Hex(password);
   }
 
   private String getCurrentOtp(String account, HttpService httpService) {
