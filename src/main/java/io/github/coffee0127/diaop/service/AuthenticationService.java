@@ -38,8 +38,13 @@ public class AuthenticationService {
 
     // Step 4: verification
     if (passwordFromDb.equals(hashedPassword) && currentOtp.equals(otp)) {
+      // reset the failed counter
+      httpService.post("https://my-api.com/api/failedCounter/reset?account=" + account);
       return true;
     } else {
+      // add the failed counter
+      httpService.post("https://my-api.com/api/failedCounter/add?account=" + account);
+
       // notify user
       var message = "Account: " + account + " try to login failed";
       new SlackClient().postMessage(message);

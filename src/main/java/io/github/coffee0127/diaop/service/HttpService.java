@@ -1,11 +1,10 @@
 package io.github.coffee0127.diaop.service;
 
+import java.io.IOException;
 import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
-
-import java.io.IOException;
 
 public class HttpService {
 
@@ -23,4 +22,6 @@ public class HttpService {
       throw new RuntimeException(e);
     }
   }
+
+  public void post(String url) {}
 }
