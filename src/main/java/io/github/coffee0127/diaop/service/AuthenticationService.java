@@ -38,7 +38,7 @@ public class AuthenticationService {
     } else {
       failCounter.add(account);
 
-      logFailedCount(account, httpService);
+      logFailedCount(account);
 
       var message = "Account: " + account + " try to login failed";
       slackAdapter.notify(message);
@@ -46,9 +46,8 @@ public class AuthenticationService {
     }
   }
 
-  private void logFailedCount(String account, HttpService httpService) {
-    var failedCount =
-        httpService.post("https://my-api.com/api/failedCounter/getFailedCount?account=" + account);
+  private void logFailedCount(String account) {
+    var failedCount = failCounter.get(account);
     log.info("accountId:{} failed times:{}", account, failedCount);
   }
 }
