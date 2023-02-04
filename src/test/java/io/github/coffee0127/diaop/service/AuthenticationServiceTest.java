@@ -1,6 +1,7 @@
 package io.github.coffee0127.diaop.service;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -55,6 +56,21 @@ class AuthenticationServiceTest {
     givenCurrentOtp("joey", "123456");
 
     shouldBeInValid("joey", "abc", "123456");
+  }
+
+  @Test
+  void account_is_locked() {
+    givenAccountIsLocked("joey", true); // hint: account is locked
+    givenPasswordFromDb("joey", "ABC123");
+    givenHashedResult("abc", "ABC123");
+    givenCurrentOtp("joey", "123456");
+
+    shouldThrow(FailedTooManyTimesException.class, "joey", "abc", "123456");
+  }
+
+  private <T extends Throwable> void shouldThrow(
+      Class<T> expectedType, String account, String password, String otp) {
+    assertThrows(expectedType, () -> authenticationService.verify(account, password, otp));
   }
 
   private void shouldBeInValid(String account, String password, String otp) {
