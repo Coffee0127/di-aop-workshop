@@ -2,12 +2,17 @@ package io.github.coffee0127.diaop.service;
 
 import com.example.external.HttpClient;
 import com.example.external.SlackClient;
-import com.example.external.SqlConnection;
-import java.util.Map;
+import io.github.coffee0127.diaop.gateway.ProfileRepo;
 import java.util.logging.Logger;
 import org.apache.commons.codec.digest.DigestUtils;
 
 public class AuthenticationService {
+
+  private final ProfileRepo profileRepo;
+
+  public AuthenticationService() {
+    profileRepo = new ProfileRepo();
+  }
 
   public boolean verify(String account, String password, String otp) {
     var httpClient = new HttpClient("https://joey.com");
@@ -17,7 +22,7 @@ public class AuthenticationService {
       throw new FailedTooManyTimesException(account);
     }
 
-    var passwordFromDb = getPasswordFromDb(account);
+    var passwordFromDb = profileRepo.getPasswordFromDb(account);
 
     var hashedPassword = getHashedPassword(password);
 
@@ -43,14 +48,6 @@ public class AuthenticationService {
         httpClient.get("/api/failedCounter/isLocked?account=" + account, Boolean.class);
     isLockedResponse.ensureSuccessStatusCode();
     return isLockedResponse.read();
-  }
-
-  private String getPasswordFromDb(String account) {
-    String passwordFromDb;
-    try (var connection = new SqlConnection("jdbc:h2:mem:my_app")) {
-      passwordFromDb = connection.query("GET_PASSWORD_SQL", Map.of("ID", account), String.class);
-    }
-    return passwordFromDb;
   }
 
   private String getHashedPassword(String password) {
