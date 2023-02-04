@@ -1,6 +1,5 @@
 package io.github.coffee0127.diaop.service;
 
-import com.example.external.HttpClient;
 import io.github.coffee0127.diaop.gateway.FailCounter;
 import io.github.coffee0127.diaop.gateway.OtpAdapter;
 import io.github.coffee0127.diaop.gateway.ProfileRepo;
@@ -52,11 +51,8 @@ public class AuthenticationService {
   }
 
   private void logFailedCount(String account) {
-    var failedCountResponse =
-        new HttpClient("https://joey.com")
-            .post("/api/failedCounter/getFailedCount?account=" + account, Integer.class);
-    failedCountResponse.ensureSuccessStatusCode();
+    var failedCount = failCounter.get(account);
     var logger = Logger.getLogger("MyLogger");
-    logger.info("accountId:" + account + " failed times:" + failedCountResponse.read());
+    logger.info("accountId:" + account + " failed times:" + failedCount);
   }
 }
