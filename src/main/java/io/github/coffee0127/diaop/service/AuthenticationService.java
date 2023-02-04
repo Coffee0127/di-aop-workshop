@@ -5,20 +5,20 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AuthenticationService {
 
-  private final ProfileRepo profileRepo;
-  private final Sha256Adapter sha256Adapter;
-  private final OtpAdapter otpAdapter;
-  private final SlackAdapter slackAdapter;
-  private final FailCounter failCounter;
-  private final Slf4JLogAdapter slf4JLogAdapter;
+  private final IProfileRepo profileRepo;
+  private final IHash hash;
+  private final IOtp otp;
+  private final Notification notification;
+  private final IFailCounter failCounter;
+  private final MyLogger myLogger;
 
   public AuthenticationService() {
     profileRepo = new ProfileRepo();
-    sha256Adapter = new Sha256Adapter();
-    otpAdapter = new OtpAdapter();
-    slackAdapter = new SlackAdapter();
+    hash = new Sha256Adapter();
+    otp = new OtpAdapter();
+    notification = new SlackAdapter();
     failCounter = new FailCounter();
-    slf4JLogAdapter = new Slf4JLogAdapter();
+    myLogger = new Slf4JLogAdapter();
   }
 
   public boolean verify(String account, String password, String otp) {
@@ -30,9 +30,9 @@ public class AuthenticationService {
     }
     var passwordFromDb = profileRepo.getPassword(account);
 
-    var hashedPassword = sha256Adapter.getHashedResult(password);
+    var hashedPassword = hash.getHashedResult(password);
 
-    var currentOtp = otpAdapter.getCurrentOtp(account, httpService);
+    var currentOtp = this.otp.getCurrentOtp(account, httpService);
 
     if (passwordFromDb.equals(hashedPassword) && currentOtp.equals(otp)) {
       failCounter.reset(account);
@@ -43,13 +43,13 @@ public class AuthenticationService {
       logFailedCount(account);
 
       var message = "Account: " + account + " try to login failed";
-      slackAdapter.notify(message);
+      notification.notify(message);
       return false;
     }
   }
 
   private void logFailedCount(String account) {
     var failedCount = failCounter.get(account);
-    slf4JLogAdapter.info("accountId:" + account + " failed times:" + failedCount);
+    myLogger.info("accountId:" + account + " failed times:" + failedCount);
   }
 }

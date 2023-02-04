@@ -3,8 +3,9 @@ package io.github.coffee0127.diaop.service;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-public class ProfileRepo {
+public class ProfileRepo implements IProfileRepo {
 
+  @Override
   public String getPassword(String account) {
     try (var connection = DriverManager.getConnection("jdbc:h2:mem:my_app", "sa", "")) {
       var pstmt = connection.prepareStatement("SELECT * FROM USER WHERE account = ?");
