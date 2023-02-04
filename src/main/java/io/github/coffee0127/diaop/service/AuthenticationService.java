@@ -1,6 +1,7 @@
 package io.github.coffee0127.diaop.service;
 
 import com.example.external.HttpClient;
+import io.github.coffee0127.diaop.gateway.OtpAdapter;
 import io.github.coffee0127.diaop.gateway.ProfileRepo;
 import io.github.coffee0127.diaop.gateway.Sha256Adapter;
 import io.github.coffee0127.diaop.gateway.SlackAdapter;
@@ -11,11 +12,13 @@ public class AuthenticationService {
   private final ProfileRepo profileRepo;
   private final SlackAdapter slackAdapter;
   private final Sha256Adapter sha256Adapter;
+  private final OtpAdapter otpAdapter;
 
   public AuthenticationService() {
     profileRepo = new ProfileRepo();
     slackAdapter = new SlackAdapter();
     sha256Adapter = new Sha256Adapter();
+    otpAdapter = new OtpAdapter();
   }
 
   public boolean verify(String account, String password, String otp) {
@@ -30,7 +33,7 @@ public class AuthenticationService {
 
     var hashedPassword = sha256Adapter.getHashedPassword(password);
 
-    var currentOtp = getCurrentOtp(account, httpClient);
+    var currentOtp = otpAdapter.getCurrentOtp(account, httpClient);
 
     // check valid
     if (passwordFromDb.equals(hashedPassword) && currentOtp.equals(otp)) {
@@ -52,15 +55,6 @@ public class AuthenticationService {
         httpClient.get("/api/failedCounter/isLocked?account=" + account, Boolean.class);
     isLockedResponse.ensureSuccessStatusCode();
     return isLockedResponse.read();
-  }
-
-  private String getCurrentOtp(String account, HttpClient httpClient) {
-    var response = httpClient.get("/api/otps?account" + account, String.class);
-    if (response.isSuccessStatusCode()) {
-    } else {
-      throw new RuntimeException("web api error, accountId:" + account);
-    }
-    return response.read();
   }
 
   private void resetFailedCount(String account, HttpClient httpClient) {
