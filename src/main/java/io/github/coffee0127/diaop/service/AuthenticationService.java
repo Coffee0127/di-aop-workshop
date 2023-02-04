@@ -9,6 +9,15 @@ import org.apache.commons.codec.digest.DigestUtils;
 public class AuthenticationService {
 
   public boolean verify(String account, String password, String otp) {
+    var httpClient = new HttpClient("https://joey.com");
+
+    var isLockedResponse =
+        httpClient.get("/api/failedCounter/isLocked?account=" + account, Boolean.class);
+    isLockedResponse.ensureSuccessStatusCode();
+    if (isLockedResponse.read()) {
+      throw new FailedTooManyTimesException(account);
+    }
+
     // get password from DB
     String passwordFromDb;
     try (var connection = new SqlConnection("jdbc:h2:mem:my_app")) {
@@ -19,8 +28,7 @@ public class AuthenticationService {
     var hashedPassword = DigestUtils.sha256Hex(password);
 
     // get current otp
-    var response =
-        new HttpClient("https://joey.com").get("/api/otps?account" + account, String.class);
+    var response = httpClient.get("/api/otps?account" + account, String.class);
     if (response.isSuccessStatusCode()) {
     } else {
       throw new RuntimeException("web api error, accountId:" + account);
