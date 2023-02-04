@@ -7,9 +7,11 @@ import org.apache.commons.codec.digest.DigestUtils;
 public class AuthenticationService {
 
   private final ProfileRepo profileRepo;
+  private final SlackAdapter slackAdapter;
 
   public AuthenticationService() {
     profileRepo = new ProfileRepo();
+    slackAdapter = new SlackAdapter();
   }
 
   public boolean verify(String account, String password, String otp) {
@@ -34,7 +36,7 @@ public class AuthenticationService {
       logFailedCount(account, httpService);
 
       var message = "Account: " + account + " try to login failed";
-      notify(message);
+      slackAdapter.notify(message);
       return false;
     }
   }
@@ -64,9 +66,5 @@ public class AuthenticationService {
     var failedCount =
         httpService.post("https://my-api.com/api/failedCounter/getFailedCount?account=" + account);
     log.info("accountId:{} failed times:{}", account, failedCount);
-  }
-
-  private void notify(String message) {
-    new SlackClient().postMessage(message);
   }
 }
