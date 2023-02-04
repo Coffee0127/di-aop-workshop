@@ -2,8 +2,10 @@ package io.github.coffee0127.diaop.service;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 
+@Slf4j
 public class AuthenticationService {
 
   public boolean verify(String account, String password, String otp) {
@@ -44,6 +46,12 @@ public class AuthenticationService {
     } else {
       // add the failed counter
       httpService.post("https://my-api.com/api/failedCounter/add?account=" + account);
+
+      // log the account's failed count
+      var failedCount =
+          httpService.post(
+              "https://my-api.com/api/failedCounter/getFailedCount?account=" + account);
+      log.info("accountId:{} failed times:{}", account, failedCount);
 
       // notify user
       var message = "Account: " + account + " try to login failed";

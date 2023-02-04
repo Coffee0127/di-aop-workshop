@@ -23,5 +23,7 @@ public class HttpService {
     }
   }
 
-  public void post(String url) {}
+  public String post(String url) {
+    return "";
+  }
 }
