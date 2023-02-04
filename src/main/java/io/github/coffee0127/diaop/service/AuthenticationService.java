@@ -11,52 +11,72 @@ public class AuthenticationService {
   public boolean verify(String account, String password, String otp) {
     var httpService = new HttpService();
 
-    // check account is locked
-    var isLocked =
-        httpService.get("https://my-api.com/api/failedCounter/isLocked?account=" + account);
-    if ("true".equals(isLocked)) {
+    var isLocked = isLocked(account, httpService);
+    if (isLocked) {
       throw new FailedTooManyTimesException(account);
     }
-    // Step 1: find DB password by account
-    String passwordFromDb;
+    var passwordFromDb = getPasswordFromDb(account);
+
+    var hashedPassword = getHashedPassword(password);
+
+    var currentOtp = getCurrentOtp(account, httpService);
+
+    if (passwordFromDb.equals(hashedPassword) && currentOtp.equals(otp)) {
+      resetFailedCount(account, httpService);
+      return true;
+    } else {
+      addFailedCount(account, httpService);
+
+      logFailedCount(account, httpService);
+
+      var message = "Account: " + account + " try to login failed";
+      notify(message);
+      return false;
+    }
+  }
+
+  private boolean isLocked(String account, HttpService httpService) {
+    return Boolean.parseBoolean(
+        httpService.get("https://my-api.com/api/failedCounter/isLocked?account=" + account));
+  }
+
+  private String getHashedPassword(String password) {
+    return DigestUtils.sha256Hex(password);
+  }
+
+  private String getPasswordFromDb(String account) {
     try (var connection = DriverManager.getConnection("jdbc:h2:mem:my_app", "sa", "")) {
       var pstmt = connection.prepareStatement("SELECT * FROM USER WHERE account = ?");
       pstmt.setString(1, account);
       var resultSet = pstmt.executeQuery();
       if (resultSet.next()) {
-        passwordFromDb = resultSet.getString("password");
-      } else {
-        throw new RuntimeException("Cannot find the password");
+        return resultSet.getString("password");
       }
+      throw new RuntimeException("Cannot find the password");
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
+  }
 
-    // Step 2: hash the parameter password
-    var hashedPassword = DigestUtils.sha256Hex(password);
+  private String getCurrentOtp(String account, HttpService httpService) {
+    return httpService.get("https://my-api.com/otp?account=" + account);
+  }
 
-    // Step 3: get the current OTP by account
-    var currentOtp = httpService.get("https://my-api.com/otp?account=" + account);
+  private void resetFailedCount(String account, HttpService httpService) {
+    httpService.post("https://my-api.com/api/failedCounter/reset?account=" + account);
+  }
 
-    // Step 4: verification
-    if (passwordFromDb.equals(hashedPassword) && currentOtp.equals(otp)) {
-      // reset the failed counter
-      httpService.post("https://my-api.com/api/failedCounter/reset?account=" + account);
-      return true;
-    } else {
-      // add the failed counter
-      httpService.post("https://my-api.com/api/failedCounter/add?account=" + account);
+  private void addFailedCount(String account, HttpService httpService) {
+    httpService.post("https://my-api.com/api/failedCounter/add?account=" + account);
+  }
 
-      // log the account's failed count
-      var failedCount =
-          httpService.post(
-              "https://my-api.com/api/failedCounter/getFailedCount?account=" + account);
-      log.info("accountId:{} failed times:{}", account, failedCount);
+  private void logFailedCount(String account, HttpService httpService) {
+    var failedCount =
+        httpService.post("https://my-api.com/api/failedCounter/getFailedCount?account=" + account);
+    log.info("accountId:{} failed times:{}", account, failedCount);
+  }
 
-      // notify user
-      var message = "Account: " + account + " try to login failed";
-      new SlackClient().postMessage(message);
-      return false;
-    }
+  private void notify(String message) {
+    new SlackClient().postMessage(message);
   }
 }
