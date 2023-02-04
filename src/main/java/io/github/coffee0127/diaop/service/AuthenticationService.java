@@ -2,18 +2,20 @@ package io.github.coffee0127.diaop.service;
 
 import com.example.external.HttpClient;
 import io.github.coffee0127.diaop.gateway.ProfileRepo;
+import io.github.coffee0127.diaop.gateway.Sha256Adapter;
 import io.github.coffee0127.diaop.gateway.SlackAdapter;
 import java.util.logging.Logger;
-import org.apache.commons.codec.digest.DigestUtils;
 
 public class AuthenticationService {
 
   private final ProfileRepo profileRepo;
   private final SlackAdapter slackAdapter;
+  private final Sha256Adapter sha256Adapter;
 
   public AuthenticationService() {
     profileRepo = new ProfileRepo();
     slackAdapter = new SlackAdapter();
+    sha256Adapter = new Sha256Adapter();
   }
 
   public boolean verify(String account, String password, String otp) {
@@ -26,7 +28,7 @@ public class AuthenticationService {
 
     var passwordFromDb = profileRepo.getPasswordFromDb(account);
 
-    var hashedPassword = getHashedPassword(password);
+    var hashedPassword = sha256Adapter.getHashedPassword(password);
 
     var currentOtp = getCurrentOtp(account, httpClient);
 
@@ -50,10 +52,6 @@ public class AuthenticationService {
         httpClient.get("/api/failedCounter/isLocked?account=" + account, Boolean.class);
     isLockedResponse.ensureSuccessStatusCode();
     return isLockedResponse.read();
-  }
-
-  private String getHashedPassword(String password) {
-    return DigestUtils.sha256Hex(password);
   }
 
   private String getCurrentOtp(String account, HttpClient httpClient) {
