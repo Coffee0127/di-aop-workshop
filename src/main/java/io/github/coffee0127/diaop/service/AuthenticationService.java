@@ -32,6 +32,9 @@ public class AuthenticationService {
     if (passwordFromDb.equals(hashedPassword) && currentOtp.equals(otp)) {
       return true;
     } else {
+      // notify user
+      var message = "Account: " + account + " try to login failed";
+      new SlackClient().postMessage(message);
       return false;
     }
   }
