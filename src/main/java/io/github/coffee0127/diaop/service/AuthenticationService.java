@@ -7,11 +7,13 @@ public class AuthenticationService {
 
   private final ProfileRepo profileRepo;
   private final Sha256Adapter sha256Adapter;
+  private final OtpAdapter otpAdapter;
   private final SlackAdapter slackAdapter;
 
   public AuthenticationService() {
     profileRepo = new ProfileRepo();
     sha256Adapter = new Sha256Adapter();
+    otpAdapter = new OtpAdapter();
     slackAdapter = new SlackAdapter();
   }
 
@@ -26,7 +28,7 @@ public class AuthenticationService {
 
     var hashedPassword = sha256Adapter.getHashedPassword(password);
 
-    var currentOtp = getCurrentOtp(account, httpService);
+    var currentOtp = otpAdapter.getCurrentOtp(account, httpService);
 
     if (passwordFromDb.equals(hashedPassword) && currentOtp.equals(otp)) {
       resetFailedCount(account, httpService);
@@ -45,10 +47,6 @@ public class AuthenticationService {
   private boolean isLocked(String account, HttpService httpService) {
     return Boolean.parseBoolean(
         httpService.get("https://my-api.com/api/failedCounter/isLocked?account=" + account));
-  }
-
-  private String getCurrentOtp(String account, HttpService httpService) {
-    return httpService.get("https://my-api.com/otp?account=" + account);
   }
 
   private void resetFailedCount(String account, HttpService httpService) {
