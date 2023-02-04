@@ -24,9 +24,9 @@ public class AuthenticationService {
     if (isLocked) {
       throw new FailedTooManyTimesException(account);
     }
-    var passwordFromDb = profileRepo.getPasswordFromDb(account);
+    var passwordFromDb = profileRepo.getPassword(account);
 
-    var hashedPassword = sha256Adapter.getHashedPassword(password);
+    var hashedPassword = sha256Adapter.getHashedResult(password);
 
     var currentOtp = otpAdapter.getCurrentOtp(account, httpService);
 

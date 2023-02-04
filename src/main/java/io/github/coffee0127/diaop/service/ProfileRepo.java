@@ -5,7 +5,7 @@ import java.sql.SQLException;
 
 public class ProfileRepo {
 
-  public String getPasswordFromDb(String account) {
+  public String getPassword(String account) {
     try (var connection = DriverManager.getConnection("jdbc:h2:mem:my_app", "sa", "")) {
       var pstmt = connection.prepareStatement("SELECT * FROM USER WHERE account = ?");
       pstmt.setString(1, account);

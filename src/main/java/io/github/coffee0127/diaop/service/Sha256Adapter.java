@@ -4,7 +4,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 
 public class Sha256Adapter {
 
-  public String getHashedPassword(String password) {
-    return DigestUtils.sha256Hex(password);
+  public String getHashedResult(String plainText) {
+    return DigestUtils.sha256Hex(plainText);
   }
 }
