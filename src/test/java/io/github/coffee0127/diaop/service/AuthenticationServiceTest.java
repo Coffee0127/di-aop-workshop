@@ -1,5 +1,6 @@
 package io.github.coffee0127.diaop.service;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -44,6 +45,21 @@ class AuthenticationServiceTest {
     givenCurrentOtp("joey", "123456");
 
     shouldBeValid("joey", "abc", "123456");
+  }
+
+  @Test
+  void invalid() {
+    givenAccountIsLocked("joey", false);
+    givenPasswordFromDb("joey", "ABC123");
+    givenHashedResult("abc", "wrong password hashed result"); // hint: wrong password
+    givenCurrentOtp("joey", "123456");
+
+    shouldBeInValid("joey", "abc", "123456");
+  }
+
+  private void shouldBeInValid(String account, String password, String otp) {
+    var isValid = authenticationService.verify(account, password, otp);
+    assertFalse(isValid);
   }
 
   private void shouldBeValid(String account, String password, String otp) {
