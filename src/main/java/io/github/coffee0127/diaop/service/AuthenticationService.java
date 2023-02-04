@@ -1,17 +1,19 @@
 package io.github.coffee0127.diaop.service;
 
 import com.example.external.HttpClient;
-import com.example.external.SlackClient;
 import io.github.coffee0127.diaop.gateway.ProfileRepo;
+import io.github.coffee0127.diaop.gateway.SlackAdapter;
 import java.util.logging.Logger;
 import org.apache.commons.codec.digest.DigestUtils;
 
 public class AuthenticationService {
 
   private final ProfileRepo profileRepo;
+  private final SlackAdapter slackAdapter;
 
   public AuthenticationService() {
     profileRepo = new ProfileRepo();
+    slackAdapter = new SlackAdapter();
   }
 
   public boolean verify(String account, String password, String otp) {
@@ -38,7 +40,7 @@ public class AuthenticationService {
       logFailedCount(account, httpClient);
 
       var message = "account:" + account + " try to login failed";
-      notify(message);
+      slackAdapter.notify(message);
       return false;
     }
   }
@@ -80,10 +82,5 @@ public class AuthenticationService {
     failedCountResponse.ensureSuccessStatusCode();
     var logger = Logger.getLogger("MyLogger");
     logger.info("accountId:" + account + " failed times:" + failedCountResponse.read());
-  }
-
-  private void notify(String message) {
-    var slackClient = new SlackClient("<YOUR_API_TOKEN>");
-    slackClient.postMessage("#my-channel", message);
   }
 }
