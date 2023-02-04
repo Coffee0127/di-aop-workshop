@@ -37,8 +37,17 @@ public class AuthenticationService {
 
     // check valid
     if (passwordFromDb.equals(hashedPassword) && currentOtp.equals(otp)) {
+      // reset the failed counter
+      var resetResponse =
+          httpClient.post("/api/failedCounter/reset?account=" + account, Void.class);
+      resetResponse.ensureSuccessStatusCode();
       return true;
     } else {
+      // add the failed counter
+      var addFailedCountResponse =
+          httpClient.post("/api/failedCounter/add?account=" + account, Void.class);
+      addFailedCountResponse.ensureSuccessStatusCode();
+
       var message = "account:" + account + " try to login failed";
       var slackClient = new SlackClient("<YOUR_API_TOKEN>");
       slackClient.postMessage("#my-channel", message);
