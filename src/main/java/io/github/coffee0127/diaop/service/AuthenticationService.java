@@ -25,7 +25,7 @@ public class AuthenticationService {
   }
 
   public boolean verify(String account, String password, String otp) {
-    var isLocked = isLocked(account);
+    var isLocked = failCounter.isLocked(account);
     if (isLocked) {
       throw new FailedTooManyTimesException(account);
     }
@@ -41,7 +41,7 @@ public class AuthenticationService {
       failCounter.reset(account);
       return true;
     } else {
-      addFailedCount(account);
+      failCounter.add(account);
 
       logFailedCount(account);
 
@@ -49,21 +49,6 @@ public class AuthenticationService {
       slackAdapter.notify(message);
       return false;
     }
-  }
-
-  private boolean isLocked(String account) {
-    var isLockedResponse =
-        new HttpClient("https://joey.com")
-            .get("/api/failedCounter/isLocked?account=" + account, Boolean.class);
-    isLockedResponse.ensureSuccessStatusCode();
-    return isLockedResponse.read();
-  }
-
-  private void addFailedCount(String account) {
-    var addFailedCountResponse =
-        new HttpClient("https://joey.com")
-            .post("/api/failedCounter/add?account=" + account, Void.class);
-    addFailedCountResponse.ensureSuccessStatusCode();
   }
 
   private void logFailedCount(String account) {
