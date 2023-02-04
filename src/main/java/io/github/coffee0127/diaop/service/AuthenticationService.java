@@ -22,6 +22,21 @@ public class AuthenticationService {
   private final IFailCounter failCounter;
   private final MyLogger myLogger;
 
+  public AuthenticationService(
+      IProfileRepo profileRepo,
+      Notification notification,
+      IHash hash,
+      IOtp otp,
+      IFailCounter failCounter,
+      MyLogger myLogger) {
+    this.profileRepo = profileRepo;
+    this.notification = notification;
+    this.hash = hash;
+    this.otp = otp;
+    this.failCounter = failCounter;
+    this.myLogger = myLogger;
+  }
+
   public AuthenticationService() {
     profileRepo = new ProfileRepo();
     notification = new SlackAdapter();
