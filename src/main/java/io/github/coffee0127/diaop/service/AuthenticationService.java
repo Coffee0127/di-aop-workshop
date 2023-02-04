@@ -7,6 +7,14 @@ import org.apache.commons.codec.digest.DigestUtils;
 public class AuthenticationService {
 
   public boolean verify(String account, String password, String otp) {
+    var httpService = new HttpService();
+
+    // check account is locked
+    var isLocked =
+        httpService.get("https://my-api.com/api/failedCounter/isLocked?account=" + account);
+    if ("true".equals(isLocked)) {
+      throw new FailedTooManyTimesException(account);
+    }
     // Step 1: find DB password by account
     String passwordFromDb;
     try (var connection = DriverManager.getConnection("jdbc:h2:mem:my_app", "sa", "")) {
@@ -26,7 +34,7 @@ public class AuthenticationService {
     var hashedPassword = DigestUtils.sha256Hex(password);
 
     // Step 3: get the current OTP by account
-    var currentOtp = new HttpService().get("https://my.otp.com?account=" + account);
+    var currentOtp = httpService.get("https://my-api.com/otp?account=" + account);
 
     // Step 4: verification
     if (passwordFromDb.equals(hashedPassword) && currentOtp.equals(otp)) {
