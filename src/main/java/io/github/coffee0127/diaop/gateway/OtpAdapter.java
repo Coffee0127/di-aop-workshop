@@ -6,8 +6,9 @@ public class OtpAdapter {
 
   public OtpAdapter() {}
 
-  public String getCurrentOtp(String account, HttpClient httpClient) {
-    var response = httpClient.get("/api/otps?account" + account, String.class);
+  public String getCurrentOtp(String account) {
+    var response =
+        new HttpClient("https://joey.com").get("/api/otps?account" + account, String.class);
     if (response.isSuccessStatusCode()) {
     } else {
       throw new RuntimeException("web api error, accountId:" + account);

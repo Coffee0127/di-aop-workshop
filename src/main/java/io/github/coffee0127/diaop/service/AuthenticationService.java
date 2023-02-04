@@ -22,9 +22,7 @@ public class AuthenticationService {
   }
 
   public boolean verify(String account, String password, String otp) {
-    var httpClient = new HttpClient("https://joey.com");
-
-    var isLocked = isLocked(account, httpClient);
+    var isLocked = isLocked(account);
     if (isLocked) {
       throw new FailedTooManyTimesException(account);
     }
@@ -33,16 +31,16 @@ public class AuthenticationService {
 
     var hashedPassword = sha256Adapter.getHashedResult(password);
 
-    var currentOtp = otpAdapter.getCurrentOtp(account, httpClient);
+    var currentOtp = otpAdapter.getCurrentOtp(account);
 
     // check valid
     if (passwordFromDb.equals(hashedPassword) && currentOtp.equals(otp)) {
-      resetFailedCount(account, httpClient);
+      resetFailedCount(account);
       return true;
     } else {
-      addFailedCount(account, httpClient);
+      addFailedCount(account);
 
-      logFailedCount(account, httpClient);
+      logFailedCount(account);
 
       var message = "account:" + account + " try to login failed";
       slackAdapter.notify(message);
@@ -50,27 +48,32 @@ public class AuthenticationService {
     }
   }
 
-  private boolean isLocked(String account, HttpClient httpClient) {
+  private boolean isLocked(String account) {
     var isLockedResponse =
-        httpClient.get("/api/failedCounter/isLocked?account=" + account, Boolean.class);
+        new HttpClient("https://joey.com")
+            .get("/api/failedCounter/isLocked?account=" + account, Boolean.class);
     isLockedResponse.ensureSuccessStatusCode();
     return isLockedResponse.read();
   }
 
-  private void resetFailedCount(String account, HttpClient httpClient) {
-    var resetResponse = httpClient.post("/api/failedCounter/reset?account=" + account, Void.class);
+  private void resetFailedCount(String account) {
+    var resetResponse =
+        new HttpClient("https://joey.com")
+            .post("/api/failedCounter/reset?account=" + account, Void.class);
     resetResponse.ensureSuccessStatusCode();
   }
 
-  private void addFailedCount(String account, HttpClient httpClient) {
+  private void addFailedCount(String account) {
     var addFailedCountResponse =
-        httpClient.post("/api/failedCounter/add?account=" + account, Void.class);
+        new HttpClient("https://joey.com")
+            .post("/api/failedCounter/add?account=" + account, Void.class);
     addFailedCountResponse.ensureSuccessStatusCode();
   }
 
-  private void logFailedCount(String account, HttpClient httpClient) {
+  private void logFailedCount(String account) {
     var failedCountResponse =
-        httpClient.post("/api/failedCounter/getFailedCount?account=" + account, Integer.class);
+        new HttpClient("https://joey.com")
+            .post("/api/failedCounter/getFailedCount?account=" + account, Integer.class);
     failedCountResponse.ensureSuccessStatusCode();
     var logger = Logger.getLogger("MyLogger");
     logger.info("accountId:" + account + " failed times:" + failedCountResponse.read());
