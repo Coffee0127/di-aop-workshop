@@ -27,4 +27,12 @@ public class FailCounter {
             .post("/api/failedCounter/add?account=" + account, Void.class);
     addFailedCountResponse.ensureSuccessStatusCode();
   }
+
+  public Integer get(String account) {
+    var failedCountResponse =
+        new HttpClient("https://joey.com")
+            .post("/api/failedCounter/getFailedCount?account=" + account, Integer.class);
+    failedCountResponse.ensureSuccessStatusCode();
+    return failedCountResponse.read();
+  }
 }
