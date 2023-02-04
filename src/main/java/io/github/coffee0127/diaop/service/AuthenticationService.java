@@ -1,12 +1,16 @@
 package io.github.coffee0127.diaop.service;
 
-import java.sql.DriverManager;
-import java.sql.SQLException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 
 @Slf4j
 public class AuthenticationService {
+
+  private final ProfileRepo profileRepo;
+
+  public AuthenticationService() {
+    profileRepo = new ProfileRepo();
+  }
 
   public boolean verify(String account, String password, String otp) {
     var httpService = new HttpService();
@@ -15,7 +19,7 @@ public class AuthenticationService {
     if (isLocked) {
       throw new FailedTooManyTimesException(account);
     }
-    var passwordFromDb = getPasswordFromDb(account);
+    var passwordFromDb = profileRepo.getPasswordFromDb(account);
 
     var hashedPassword = getHashedPassword(password);
 
@@ -42,20 +46,6 @@ public class AuthenticationService {
 
   private String getHashedPassword(String password) {
     return DigestUtils.sha256Hex(password);
-  }
-
-  private String getPasswordFromDb(String account) {
-    try (var connection = DriverManager.getConnection("jdbc:h2:mem:my_app", "sa", "")) {
-      var pstmt = connection.prepareStatement("SELECT * FROM USER WHERE account = ?");
-      pstmt.setString(1, account);
-      var resultSet = pstmt.executeQuery();
-      if (resultSet.next()) {
-        return resultSet.getString("password");
-      }
-      throw new RuntimeException("Cannot find the password");
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
-    }
   }
 
   private String getCurrentOtp(String account, HttpService httpService) {
