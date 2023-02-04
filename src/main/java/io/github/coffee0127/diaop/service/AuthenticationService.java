@@ -9,18 +9,20 @@ public class AuthenticationService {
   private final Sha256Adapter sha256Adapter;
   private final OtpAdapter otpAdapter;
   private final SlackAdapter slackAdapter;
+  private final FailCounter failCounter;
 
   public AuthenticationService() {
     profileRepo = new ProfileRepo();
     sha256Adapter = new Sha256Adapter();
     otpAdapter = new OtpAdapter();
     slackAdapter = new SlackAdapter();
+    failCounter = new FailCounter();
   }
 
   public boolean verify(String account, String password, String otp) {
     var httpService = new HttpService();
 
-    var isLocked = isLocked(account, httpService);
+    var isLocked = failCounter.isLocked(account);
     if (isLocked) {
       throw new FailedTooManyTimesException(account);
     }
@@ -31,10 +33,10 @@ public class AuthenticationService {
     var currentOtp = otpAdapter.getCurrentOtp(account, httpService);
 
     if (passwordFromDb.equals(hashedPassword) && currentOtp.equals(otp)) {
-      resetFailedCount(account, httpService);
+      failCounter.reset(account);
       return true;
     } else {
-      addFailedCount(account, httpService);
+      failCounter.add(account);
 
       logFailedCount(account, httpService);
 
@@ -42,19 +44,6 @@ public class AuthenticationService {
       slackAdapter.notify(message);
       return false;
     }
-  }
-
-  private boolean isLocked(String account, HttpService httpService) {
-    return Boolean.parseBoolean(
-        httpService.get("https://my-api.com/api/failedCounter/isLocked?account=" + account));
-  }
-
-  private void resetFailedCount(String account, HttpService httpService) {
-    httpService.post("https://my-api.com/api/failedCounter/reset?account=" + account);
-  }
-
-  private void addFailedCount(String account, HttpService httpService) {
-    httpService.post("https://my-api.com/api/failedCounter/add?account=" + account);
   }
 
   private void logFailedCount(String account, HttpService httpService) {
