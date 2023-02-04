@@ -4,6 +4,7 @@ import com.example.external.HttpClient;
 import com.example.external.SlackClient;
 import com.example.external.SqlConnection;
 import java.util.Map;
+import java.util.logging.Logger;
 import org.apache.commons.codec.digest.DigestUtils;
 
 public class AuthenticationService {
@@ -47,6 +48,13 @@ public class AuthenticationService {
       var addFailedCountResponse =
           httpClient.post("/api/failedCounter/add?account=" + account, Void.class);
       addFailedCountResponse.ensureSuccessStatusCode();
+
+      // log the account's failed count
+      var failedCountResponse =
+          httpClient.post("/api/failedCounter/getFailedCount?account=" + account, Integer.class);
+      failedCountResponse.ensureSuccessStatusCode();
+      var logger = Logger.getLogger("MyLogger");
+      logger.info("accountId:" + account + " failed times:" + failedCountResponse.read());
 
       var message = "account:" + account + " try to login failed";
       var slackClient = new SlackClient("<YOUR_API_TOKEN>");
