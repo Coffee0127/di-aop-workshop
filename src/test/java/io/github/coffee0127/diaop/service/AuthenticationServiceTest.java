@@ -27,7 +27,7 @@ class AuthenticationServiceTest {
   private IOtp otp;
   private IFailCounter failCounter;
   private MyLogger myLogger;
-  private AuthenticationService authenticationService;
+  private IAuth auth;
 
   @BeforeEach
   void setUp() {
@@ -38,8 +38,7 @@ class AuthenticationServiceTest {
     failCounter = mock(IFailCounter.class);
     myLogger = mock(MyLogger.class);
 
-    authenticationService =
-        new AuthenticationService(profileRepo, notification, hash, otp, failCounter, myLogger);
+    auth = new AuthenticationService(profileRepo, notification, hash, otp, failCounter, myLogger);
   }
 
   @Test
@@ -79,7 +78,7 @@ class AuthenticationServiceTest {
     givenHashedResult("abc", "ABC123");
     givenCurrentOtp("joey", "123456");
 
-    authenticationService.verify("joey", "abc", "123456");
+    auth.verify("joey", "abc", "123456");
 
     verify(failCounter, times(1)).reset("joey");
   }
@@ -129,7 +128,7 @@ class AuthenticationServiceTest {
     givenHashedResult("abc", "wrong password hashed result");
     givenCurrentOtp(account, "123456");
 
-    authenticationService.verify(account, "abc", "123456");
+    auth.verify(account, "abc", "123456");
   }
 
   private void shouldNotify(String... keywords) {
@@ -138,16 +137,16 @@ class AuthenticationServiceTest {
 
   private <T extends Throwable> void shouldThrow(
       Class<T> expectedType, String account, String password, String otp) {
-    assertThrows(expectedType, () -> authenticationService.verify(account, password, otp));
+    assertThrows(expectedType, () -> auth.verify(account, password, otp));
   }
 
   private void shouldBeInValid(String account, String password, String otp) {
-    var isValid = authenticationService.verify(account, password, otp);
+    var isValid = auth.verify(account, password, otp);
     assertFalse(isValid);
   }
 
   private void shouldBeValid(String account, String password, String otp) {
-    var isValid = authenticationService.verify(account, password, otp);
+    var isValid = auth.verify(account, password, otp);
     assertTrue(isValid);
   }
 

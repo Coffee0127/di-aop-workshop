@@ -7,7 +7,7 @@ import io.github.coffee0127.diaop.gateway.IProfileRepo;
 import io.github.coffee0127.diaop.gateway.MyLogger;
 import io.github.coffee0127.diaop.gateway.Notification;
 
-public class AuthenticationService {
+public class AuthenticationService implements IAuth {
 
   private final IProfileRepo profileRepo;
   private final Notification notification;
@@ -31,6 +31,7 @@ public class AuthenticationService {
     this.myLogger = myLogger;
   }
 
+  @Override
   public boolean verify(String account, String password, String otp) {
     var isLocked = failCounter.isLocked(account);
     if (isLocked) {
