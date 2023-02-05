@@ -98,6 +98,24 @@ class AuthenticationServiceTest {
     shouldAddFailedCount("joey");
   }
 
+  @Test
+  void should_log_failed_count_when_invalid() {
+    givenLatestFailedCount("joey", 3);
+
+    whenInvalid("joey");
+
+    shouldLog("3");
+  }
+
+  private void shouldLog(String... keywords) {
+    verify(myLogger, times(1))
+        .info(argThat(message -> Arrays.stream(keywords).allMatch(message::contains)));
+  }
+
+  private void givenLatestFailedCount(String account, int failedCount) {
+    when(failCounter.get(account)).thenReturn(failedCount);
+  }
+
   private void shouldAddFailedCount(String account) {
     verify(failCounter, times(1)).add(account);
   }
