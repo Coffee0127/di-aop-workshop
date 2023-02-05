@@ -1,17 +1,11 @@
 package io.github.coffee0127.diaop.service;
 
-import io.github.coffee0127.diaop.gateway.FailCounter;
 import io.github.coffee0127.diaop.gateway.IFailCounter;
 import io.github.coffee0127.diaop.gateway.IHash;
 import io.github.coffee0127.diaop.gateway.IOtp;
 import io.github.coffee0127.diaop.gateway.IProfileRepo;
-import io.github.coffee0127.diaop.gateway.JdkLogger;
 import io.github.coffee0127.diaop.gateway.MyLogger;
 import io.github.coffee0127.diaop.gateway.Notification;
-import io.github.coffee0127.diaop.gateway.OtpAdapter;
-import io.github.coffee0127.diaop.gateway.ProfileRepo;
-import io.github.coffee0127.diaop.gateway.Sha256Adapter;
-import io.github.coffee0127.diaop.gateway.SlackAdapter;
 
 public class AuthenticationService {
 
@@ -35,15 +29,6 @@ public class AuthenticationService {
     this.otp = otp;
     this.failCounter = failCounter;
     this.myLogger = myLogger;
-  }
-
-  public AuthenticationService() {
-    profileRepo = new ProfileRepo();
-    notification = new SlackAdapter();
-    hash = new Sha256Adapter();
-    otp = new OtpAdapter();
-    failCounter = new FailCounter();
-    myLogger = new JdkLogger();
   }
 
   public boolean verify(String account, String password, String otp) {
