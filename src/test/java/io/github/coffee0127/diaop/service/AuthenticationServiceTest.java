@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.github.coffee0127.diaop.gateway.IFailCounter;
@@ -66,6 +68,18 @@ class AuthenticationServiceTest {
     givenCurrentOtp("joey", "123456");
 
     shouldThrow(FailedTooManyTimesException.class, "joey", "abc", "123456");
+  }
+
+  @Test
+  void reset_failed_count_when_valid() {
+    givenAccountIsLocked("joey", false);
+    givenPasswordFromDb("joey", "ABC123");
+    givenHashedResult("abc", "ABC123");
+    givenCurrentOtp("joey", "123456");
+
+    authenticationService.verify("joey", "abc", "123456");
+
+    verify(failCounter, times(1)).reset("joey");
   }
 
   private <T extends Throwable> void shouldThrow(
