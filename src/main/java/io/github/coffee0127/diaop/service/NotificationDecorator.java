@@ -19,6 +19,10 @@ public class NotificationDecorator implements IAuth {
 
   @Override
   public boolean verify(String account, String password, String otp) {
-    return false;
+    var isValid = auth.verify(account, password, otp);
+    if (!isValid) {
+      notifyUser(account);
+    }
+    return isValid;
   }
 }
