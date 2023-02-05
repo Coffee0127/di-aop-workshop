@@ -14,6 +14,9 @@ public class AuthenticationService implements IAuth {
   private final IFailCounter failCounter;
   private final MyLogger myLogger;
 
+  // temporary field for moving method to FailCounterDecorator
+  private FailCounterDecorator failCounterDecorator;
+
   public AuthenticationService(
       IProfileRepo profileRepo, IHash hash, IOtp otp, IFailCounter failCounter, MyLogger myLogger) {
     this.profileRepo = profileRepo;
