@@ -32,13 +32,15 @@ class AuthenticationServiceTest {
   @BeforeEach
   void setUp() {
     profileRepo = mock(IProfileRepo.class);
-    notification = mock(Notification.class);
     hash = mock(IHash.class);
     otp = mock(IOtp.class);
     failCounter = mock(IFailCounter.class);
     myLogger = mock(MyLogger.class);
 
-    auth = new AuthenticationService(profileRepo, notification, hash, otp, failCounter, myLogger);
+    auth = new AuthenticationService(profileRepo, hash, otp, failCounter, myLogger);
+
+    notification = mock(Notification.class);
+    auth = new NotificationDecorator(auth, notification);
   }
 
   @Test
