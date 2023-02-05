@@ -33,13 +33,9 @@ public class AuthenticationService implements IAuth {
 
     // check valid
     if (passwordFromDb.equals(hashedPassword) && currentOtp.equals(otp)) {
-      failCounter.reset(account);
       return true;
     } else {
-      failCounter.add(account);
-
       logFailedCount(account);
-
       return false;
     }
   }

@@ -16,7 +16,13 @@ public class FailCounterDecorator implements IAuth {
   public boolean verify(String account, String password, String otp) {
     checkAccountLocked(account);
 
-    return auth.verify(account, password, otp);
+    var isValid = auth.verify(account, password, otp);
+    if (isValid) {
+      failCounter.reset(account);
+    } else {
+      failCounter.add(account);
+    }
+    return isValid;
   }
 
   private void checkAccountLocked(String account) {
