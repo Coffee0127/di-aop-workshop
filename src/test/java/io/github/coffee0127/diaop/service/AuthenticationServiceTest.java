@@ -91,6 +91,17 @@ class AuthenticationServiceTest {
     shouldNotify("joey", "failed");
   }
 
+  @Test
+  void should_add_failed_count_when_invalid() {
+    whenInvalid("joey");
+
+    shouldAddFailedCount("joey");
+  }
+
+  private void shouldAddFailedCount(String account) {
+    verify(failCounter, times(1)).add(account);
+  }
+
   private void whenInvalid(String account) {
     givenAccountIsLocked(account, false);
     givenPasswordFromDb(account, "ABC123");
