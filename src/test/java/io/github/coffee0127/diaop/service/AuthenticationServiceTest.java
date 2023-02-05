@@ -34,15 +34,14 @@ class AuthenticationServiceTest {
     profileRepo = mock(IProfileRepo.class);
     hash = mock(IHash.class);
     otp = mock(IOtp.class);
-    failCounter = mock(IFailCounter.class);
-    myLogger = mock(MyLogger.class);
-
-    auth = new AuthenticationService(profileRepo, hash, otp, failCounter, myLogger);
+    auth = new AuthenticationService(profileRepo, hash, otp);
 
     notification = mock(Notification.class);
     auth = new NotificationDecorator(auth, notification);
 
-    auth = new FailCounterDecorator(auth, failCounter);
+    failCounter = mock(IFailCounter.class);
+    myLogger = mock(MyLogger.class);
+    auth = new FailCounterDecorator(auth, failCounter, myLogger);
   }
 
   @Test
