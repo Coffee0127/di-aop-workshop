@@ -108,8 +108,11 @@ class AuthenticationServiceTest {
   }
 
   private void shouldLog(String... keywords) {
-    verify(myLogger, times(1))
-        .info(argThat(message -> Arrays.stream(keywords).allMatch(message::contains)));
+    verify(myLogger, times(1)).info(containsStrings(keywords));
+  }
+
+  private String containsStrings(String[] keywords) {
+    return argThat(message -> Arrays.stream(keywords).allMatch(message::contains));
   }
 
   private void givenLatestFailedCount(String account, int failedCount) {
@@ -130,8 +133,7 @@ class AuthenticationServiceTest {
   }
 
   private void shouldNotify(String... keywords) {
-    verify(notification, times(1))
-        .notify(argThat(message -> Arrays.stream(keywords).allMatch(message::contains)));
+    verify(notification, times(1)).notify(containsStrings(keywords));
   }
 
   private <T extends Throwable> void shouldThrow(
