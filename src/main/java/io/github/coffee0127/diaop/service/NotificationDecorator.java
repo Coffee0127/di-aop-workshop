@@ -2,13 +2,12 @@ package io.github.coffee0127.diaop.service;
 
 import io.github.coffee0127.diaop.gateway.Notification;
 
-public class NotificationDecorator implements IAuth {
+public class NotificationDecorator extends AuthDecoratorBase {
 
-  private final IAuth auth;
   private final Notification notification;
 
   public NotificationDecorator(IAuth auth, Notification notification) {
-    this.auth = auth;
+    super(auth);
     this.notification = notification;
   }
 

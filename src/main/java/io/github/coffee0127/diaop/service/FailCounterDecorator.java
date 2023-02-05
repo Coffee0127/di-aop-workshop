@@ -3,14 +3,13 @@ package io.github.coffee0127.diaop.service;
 import io.github.coffee0127.diaop.gateway.IFailCounter;
 import io.github.coffee0127.diaop.gateway.MyLogger;
 
-public class FailCounterDecorator implements IAuth {
+public class FailCounterDecorator extends AuthDecoratorBase {
 
-  private final IAuth auth;
   private final IFailCounter failCounter;
   private final MyLogger myLogger;
 
   public FailCounterDecorator(IAuth auth, IFailCounter failCounter, MyLogger myLogger) {
-    this.auth = auth;
+    super(auth);
     this.failCounter = failCounter;
     this.myLogger = myLogger;
   }
