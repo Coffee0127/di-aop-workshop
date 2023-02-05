@@ -25,11 +25,6 @@ public class AuthenticationService implements IAuth {
 
   @Override
   public boolean verify(String account, String password, String otp) {
-    var isLocked = failCounter.isLocked(account);
-    if (isLocked) {
-      throw new FailedTooManyTimesException(account);
-    }
-
     var passwordFromDb = profileRepo.getPassword(account);
 
     var hashedPassword = hash.getHashedResult(password);

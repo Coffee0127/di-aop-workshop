@@ -41,6 +41,8 @@ class AuthenticationServiceTest {
 
     notification = mock(Notification.class);
     auth = new NotificationDecorator(auth, notification);
+
+    auth = new FailCounterDecorator(auth, failCounter);
   }
 
   @Test
