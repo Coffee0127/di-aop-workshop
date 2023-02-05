@@ -10,11 +10,12 @@ import io.github.coffee0127.diaop.gateway.Notification;
 public class AuthenticationService implements IAuth {
 
   private final IProfileRepo profileRepo;
-  private final Notification notification;
+  public final Notification notification;
   private final IHash hash;
   private final IOtp otp;
   private final IFailCounter failCounter;
   private final MyLogger myLogger;
+  private final NotificationDecorator notificationDecorator;
 
   public AuthenticationService(
       IProfileRepo profileRepo,
@@ -29,6 +30,7 @@ public class AuthenticationService implements IAuth {
     this.otp = otp;
     this.failCounter = failCounter;
     this.myLogger = myLogger;
+    notificationDecorator = new NotificationDecorator(this, this.notification);
   }
 
   @Override
@@ -53,8 +55,7 @@ public class AuthenticationService implements IAuth {
 
       logFailedCount(account);
 
-      var message = "account:" + account + " try to login failed";
-      notification.notify(message);
+      // notificationDecorator.notifyUser(account);
       return false;
     }
   }
