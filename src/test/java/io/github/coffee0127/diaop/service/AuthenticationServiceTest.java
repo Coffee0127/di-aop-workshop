@@ -3,6 +3,7 @@ package io.github.coffee0127.diaop.service;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -14,6 +15,7 @@ import io.github.coffee0127.diaop.gateway.IOtp;
 import io.github.coffee0127.diaop.gateway.IProfileRepo;
 import io.github.coffee0127.diaop.gateway.MyLogger;
 import io.github.coffee0127.diaop.gateway.Notification;
+import java.util.Arrays;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -80,6 +82,27 @@ class AuthenticationServiceTest {
     authenticationService.verify("joey", "abc", "123456");
 
     verify(failCounter, times(1)).reset("joey");
+  }
+
+  @Test
+  void should_notify_user_when_invalid() {
+    whenInvalid("joey");
+
+    shouldNotify("joey", "failed");
+  }
+
+  private void whenInvalid(String account) {
+    givenAccountIsLocked(account, false);
+    givenPasswordFromDb(account, "ABC123");
+    givenHashedResult("abc", "wrong password hashed result");
+    givenCurrentOtp(account, "123456");
+
+    authenticationService.verify(account, "abc", "123456");
+  }
+
+  private void shouldNotify(String... keywords) {
+    verify(notification, times(1))
+        .notify(argThat(message -> Arrays.stream(keywords).allMatch(message::contains)));
   }
 
   private <T extends Throwable> void shouldThrow(
